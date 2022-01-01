@@ -76,13 +76,16 @@ namespace MicroRabbit.Infra.Bus
         {
             var factory = new ConnectionFactory()
             {
-                HostName = "loaclhost",
-                DispatchConsumersAsync = true
+                HostName = "localhost",
+                DispatchConsumersAsync = true,
+                UserName = "guest",
+                Password = "guest"
             };
-
             var connection = factory.CreateConnection();
             var channel = connection.CreateModel();
+
             var eventName = typeof(T).Name;
+
             channel.QueueDeclare(eventName, false, false, false, null);
 
             var consumer = new AsyncEventingBasicConsumer(channel);
@@ -94,11 +97,11 @@ namespace MicroRabbit.Infra.Bus
         private async Task Consumer_Received(object sender, BasicDeliverEventArgs e)
         {
             var eventName = e.RoutingKey;
-            var message2 = e.Body.ToString();
+            var message2 = e.Body.ToArray();
 
             try
             {
-                await ProcessEvent(eventName, message2).ConfigureAwait(false);
+                await ProcessEvent(eventName, Encoding.UTF8.GetString(message2)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
