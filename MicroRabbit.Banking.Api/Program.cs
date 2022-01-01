@@ -2,6 +2,7 @@ using MediatR;
 using MicroRabbit.Banking.Data.Context;
 using MicroRabbit.Infra.IoC;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,17 @@ builder.Services.AddDbContext<BankingDBContext>(opt =>
 });
 
 builder.Services.AddMediatR(typeof(Program));
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Banking Microservice",
+        Description = "An ASP.NET Core Web API for managing Banking Microservice",
+    });
+});
+
 RegisterServices(builder.Services);
 
 void RegisterServices(IServiceCollection services)
@@ -29,6 +41,17 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+
+app.UseSwagger(options =>
+{
+    options.SerializeAsV2 = true;
+});
+
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    options.RoutePrefix = string.Empty;
+});
 
 app.UseAuthorization();
 
